@@ -1,0 +1,47 @@
+# Python
+*.py[cod]
+__pycache__/
+*.so
+
+# Virtual Environment
+venv/
+env/
+.venv/
+pip-selfcheck.json
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# SQLite Databases
+*.sqlite3
+*.db
+*.db-journal
+
+# Logs
+*.log
+
+# Pytest
+.cache/
+*.pytest_cache/
+
+# Environments
+.env
+.env.*
+
+# Byte-compiled and optimizations
+*.pyo
+*.pyd
+
+# Distribution / packaging
+.Python
+build/
+dist/
+*.egg-info/
+*.eggs/
+
+# Django stuff (если вдруг понадобится в будущем)
+*.migrations/
+
+# IDE files
+.idea/
