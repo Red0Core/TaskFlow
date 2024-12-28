@@ -3,5 +3,5 @@ from routers import auth, tasks
 
 app = FastAPI()
 
-app.include_router(auth.router, tags=['auth'])
-app.include_router(tasks.router, tags=['tasks'])
+app.include_router(auth.router, tags=['Authentication'])
+app.include_router(tasks.router, tags=['Tasks'])

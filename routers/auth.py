@@ -1,6 +1,7 @@
 from typing import Annotated
 from fastapi import Depends, HTTPException, APIRouter, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from sqlalchemy import desc
 import database
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -99,7 +100,13 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Se
     return user
 
 
-@router.post("/auth/register", status_code=201)
+@router.post(
+        "/auth/register",
+        status_code=201,
+        summary="Регистрация нового пользователя",
+        description="Регистрируется новый пользователь с использованием username и password",
+        response_description="В качестве доказательства регистрации запрос возвращает username пользователя"
+    )
 async def register_user(user: UserIn, db: Session = Depends(database.get_db)):
     existing_user = db.query(database.User).filter(database.User.username == user.username).first()
     if existing_user:
@@ -112,7 +119,12 @@ async def register_user(user: UserIn, db: Session = Depends(database.get_db)):
 
     return {"username": user_db.username}
 
-@router.post("/token")
+@router.post(
+        "/token",
+        summary="Авторизация пользователя",
+        description="Авторизация с выдачей access_token и refresh_token.",
+        response_model=RefreshToken,
+    )
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Session = Depends(database.get_db)
@@ -140,7 +152,12 @@ async def login_for_access_token(
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
-@router.post("/auth/refresh")
+@router.post(
+        "/auth/refresh",
+        summary="Обновление access_token",
+        description="Отправляя действующий refresh_token, вы получаете новый access_token",
+        response_model=AccessToken,
+    )
 async def refresh_access_token(refresh_token: RefreshTokenRequest, db: Session = Depends(database.get_db)):
     try:
         payload = jwt.decode(refresh_token.refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -166,7 +183,11 @@ async def refresh_access_token(refresh_token: RefreshTokenRequest, db: Session =
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
 
-@router.post("/auth/logout")
+@router.post(
+        "/auth/logout",
+        summary="Выход из сессии",
+        description="Клиент полностью выходит из сессии, из базы удаляется refresh_token"
+    )
 async def logout(
     refresh_token: RefreshTokenRequest,
     db: Session = Depends(database.get_db),

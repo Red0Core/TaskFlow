@@ -1,9 +1,9 @@
 from pydantic import BaseModel, Field, ConfigDict
 
 class TaskBase(BaseModel):
-    title: str
-    description: str
-
+    title: str = Field(..., description="Название задачи")
+    description: str = Field(..., description="Описание задачи")
+    
 class TaskCreate(TaskBase):
     pass
 
@@ -21,5 +21,6 @@ class TaskResponse(TaskBase):
     id: int
     is_completed: bool
 
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
+    )
