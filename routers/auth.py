@@ -4,7 +4,6 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 import database
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from schemas import UserInModel, UserModel
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -113,14 +112,6 @@ async def register_user(user: UserIn, db: Session = Depends(database.get_db)):
 
     return {"username": user_db.username}
 
-@router.post("/auth/login", status_code=200, response_model=UserModel)
-async def login_user(user: UserInModel, db: Session = Depends(database.get_db)):
-    user_db = db.query(database.User).filter(database.User.username == user.username).first()
-    if user_db is None or not verify_password(user.password, user_db.hashed_password):
-        raise HTTPException(status_code=401, detail="Invalid username or password")
-
-    return UserModel(id=user_db.id, tasks=user_db.tasks)
-
 @router.post("/token")
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
@@ -133,11 +124,9 @@ async def login_for_access_token(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    print(user.id)
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     # Закладываем не username, а id пользователя
     access_token = create_access_token(
         data={"sub": str(user.id)}, expires_delta=access_token_expires
     )
-    print(Token(access_token=access_token, token_type="bearer"))
     return Token(access_token=access_token, token_type="bearer")

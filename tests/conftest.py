@@ -3,7 +3,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from main import app
-from database import Base, get_db
+from database import Base, get_db, User
+from routers.auth import get_password_hash
 
 # Настройка тестовой базы данных
 SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///./test_todo.db"
@@ -50,3 +51,26 @@ def clean_database(db_session):
     for table in reversed(Base.metadata.sorted_tables):
         db_session.execute(table.delete())
     db_session.commit()
+
+@pytest.fixture
+def create_test_user():
+    def _create_test_user(username: str, password: str):
+        db = TestingSessionLocal()
+        hashed_password = get_password_hash(password)
+        user = User(username=username, hashed_password=hashed_password)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        db.close()
+        return user
+    return _create_test_user
+
+@pytest.fixture
+def auth_token(client, create_test_user):
+    user = create_test_user(username="testuser", password="testpassword")
+    response = client.post(
+        "/token",
+        data={"username": "testuser", "password": "testpassword"},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    return response.json()["access_token"]

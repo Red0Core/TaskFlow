@@ -23,19 +23,3 @@ class TaskResponse(TaskBase):
 
     class Config:
         from_attributes = True
-
-
-class UserInModel(BaseModel):
-    username: str = Field(description="Имя пользователя")
-    password: str = Field(
-        description="Пароль пользователя (не сохраняется в открытом виде)",
-        min_length=8
-    )
-
-class UserModel(BaseModel):
-    id: int = Field(description="Айди пользователя")
-    tasks: list[TaskResponse] = Field(
-        description="Список задач, принадлежащих пользователю."
-    )
-
-    model_config = ConfigDict(from_attributes=True)
