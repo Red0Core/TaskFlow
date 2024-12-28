@@ -8,32 +8,20 @@ from datetime import datetime, timedelta, timezone
 
 import jwt
 from jwt.exceptions import InvalidTokenError
-import bcrypt
+from utils import get_password_hash, verify_password
 
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ALGORITHM = os.getenv("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS"))
 
 router = APIRouter()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-def get_password_hash(password):
-    pwd_bytes = password.encode('utf-8')
-    salt = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(password=pwd_bytes, salt=salt)
-    string_password = hashed_password.decode('utf8')
-    return string_password
-
-def verify_password(plain_password, hashed_password):
-    password_byte_enc = plain_password.encode('utf-8')
-    hashed_password = hashed_password.encode('utf-8')
-    return bcrypt.checkpw(password_byte_enc, hashed_password)
-
 
 class UserInDB(BaseModel):
     id: int
@@ -64,9 +52,12 @@ def authenticate_user(db: Session, username: str, password: str):
 
     return user
 
-class Token(BaseModel):
+class AccessToken(BaseModel):
     access_token: str
     token_type: str
+
+class RefreshToken(AccessToken):
+    refresh_token: str
 
 class TokenData(BaseModel):
     user_id: int | None = None
@@ -81,6 +72,12 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+def create_refresh_token(user_id: int):
+    expire = datetime.now() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    payload = {"sub": str(user_id), "exp": expire}
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return token, expire
+
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(database.get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -89,7 +86,6 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Se
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        print(payload)
         # Закладываем не username, а id пользователя
         user_id: int = int(payload.get("sub"))
         if user_id is None:
@@ -120,7 +116,7 @@ async def register_user(user: UserIn, db: Session = Depends(database.get_db)):
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Session = Depends(database.get_db)
-) -> Token:
+) -> RefreshToken:
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -133,4 +129,50 @@ async def login_for_access_token(
     access_token = create_access_token(
         data={"sub": str(user.id)}, expires_delta=access_token_expires
     )
-    return Token(access_token=access_token, token_type="bearer")
+    refresh_token, refresh_exp = create_refresh_token(user_id=user.id)
+
+    # Сохраняем refresh_token в базе
+    db.add(database.RefreshToken(user_id=user.id, token=refresh_token, expires_at=refresh_exp))
+    db.commit()
+
+    return RefreshToken(refresh_token=refresh_token, access_token=access_token, token_type="bearer")
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+@router.post("/auth/refresh")
+async def refresh_access_token(refresh_token: RefreshTokenRequest, db: Session = Depends(database.get_db)):
+    try:
+        payload = jwt.decode(refresh_token.refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = int(payload.get("sub"))
+        if not user_id:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
+        # Проверяем, есть ли такой refresh_token в базе данных
+        refresh_token_record = db.query(database.RefreshToken).filter(
+            database.RefreshToken.token == refresh_token.refresh_token,
+            database.RefreshToken.expires_at > datetime.now()
+        ).first()
+        if not refresh_token_record:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired refresh token")
+
+        # Генерируем новый access_token
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(data={"sub": user_id}, expires_delta=access_token_expires)
+        return AccessToken(access_token=access_token, token_type="bearer")
+
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
+
+@router.post("/auth/logout")
+async def logout(
+    refresh_token: RefreshTokenRequest,
+    db: Session = Depends(database.get_db),
+):
+    token_record = db.query(database.RefreshToken).filter(database.RefreshToken.token == refresh_token.refresh_token).first()
+    if token_record:
+        db.delete(token_record)
+        db.commit()
+    return {"detail": "Successfully logged out"}

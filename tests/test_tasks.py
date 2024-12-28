@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 
-def test_create_task(client, clean_database, auth_token):
-    headers = {"Authorization": f"Bearer {auth_token}"}
+def test_create_task(client, clean_database, access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
     response = client.post(
         "/tasks",
         json={"title": "Test Task", "description": "This is a test task."},
@@ -26,8 +26,8 @@ def test_create_task(client, clean_database, auth_token):
     )
     assert fail_response.status_code == 422
 
-def test_get_tasks(client, clean_database, auth_token):
-    headers = {"Authorization": f"Bearer {auth_token}"}
+def test_get_tasks(client, clean_database, access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
     
     # Создаём задачу
     client.post(
@@ -50,8 +50,8 @@ def test_get_tasks(client, clean_database, auth_token):
     assert tasks[1]["title"] == "Task 2"
 
 
-def test_get_one_task(client: TestClient, clean_database, auth_token):
-    headers = {"Authorization": f"Bearer {auth_token}"}
+def test_get_one_task(client: TestClient, clean_database, access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
     
     # Создаём задачу
     create_task = client.post(
@@ -75,16 +75,16 @@ def test_get_one_task(client: TestClient, clean_database, auth_token):
     assert task["description"] == "Description 1"
     assert task["is_completed"] is False
 
-def test_get_nonexistent_task(client, clean_database, auth_token):
-    headers = {"Authorization": f"Bearer {auth_token}"}
+def test_get_nonexistent_task(client, clean_database, access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
 
     # Попытка получить задачу несуществующего пользователя
     response = client.get(f"/tasks/-1", headers=headers)
     assert response.status_code == 404
     assert response.json() == {"detail": "Task not found"}
 
-def test_patch_task(client: TestClient, clean_database, auth_token):
-    headers = {"Authorization": f"Bearer {auth_token}"}
+def test_patch_task(client: TestClient, clean_database, access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
 
     # Создаём задачу
     create_task = client.post(
@@ -107,8 +107,8 @@ def test_patch_task(client: TestClient, clean_database, auth_token):
     assert updated_task["description"] == "Description 1"
     assert updated_task["is_completed"] is True
 
-def test_update_task(client, clean_database, auth_token):
-    headers = {"Authorization": f"Bearer {auth_token}"}
+def test_update_task(client, clean_database, access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
     
     # Создаём задачу
     create_response = client.post(
@@ -131,8 +131,8 @@ def test_update_task(client, clean_database, auth_token):
     assert updated_task["is_completed"] is True
 
 
-def test_get_completed_tasks(client: TestClient, clean_database, auth_token):
-    headers = {"Authorization": f"Bearer {auth_token}"}
+def test_get_completed_tasks(client: TestClient, clean_database, access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
     
     # Добавление новых задач
     for i in range(2, 5):
@@ -174,8 +174,8 @@ def test_get_completed_tasks(client: TestClient, clean_database, auth_token):
     for task in response.json():
         assert task['is_completed'] is False
 
-def test_delete_task(client, clean_database, auth_token):
-    headers = {"Authorization": f"Bearer {auth_token}"}
+def test_delete_task(client, clean_database, access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
     
     # Создаём задачу
     create_response = client.post(

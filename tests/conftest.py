@@ -67,10 +67,14 @@ def create_test_user():
 
 @pytest.fixture
 def auth_token(client, create_test_user):
-    user = create_test_user(username="testuser", password="testpassword")
+    create_test_user(username="testuser", password="testpassword")
     response = client.post(
         "/token",
         data={"username": "testuser", "password": "testpassword"},
         headers={"Content-Type": "application/x-www-form-urlencoded"},
     )
-    return response.json()["access_token"]
+    return response.json()
+
+@pytest.fixture
+def access_token(auth_token):
+    return auth_token['access_token']

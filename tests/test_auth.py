@@ -1,4 +1,3 @@
-from database import User
 from fastapi.testclient import TestClient
 
 # Тест регистрации
@@ -60,3 +59,16 @@ def test_login_invalid_user(client, clean_database):
 def test_register_empty_body(client: TestClient):
     response = client.post("/auth/register", json={})
     assert response.status_code == 422
+
+def test_refresh_access_token(client: TestClient, auth_token):
+    refresh_token = auth_token["refresh_token"]
+    response = client.post("/auth/refresh", json={"refresh_token": refresh_token})
+    assert response.status_code == 200
+    assert "access_token" in response.json()
+    assert "access_token" != auth_token["access_token"]
+
+def test_logout(client, auth_token):
+    refresh_token = auth_token["refresh_token"]
+    response = client.post("/auth/logout", json={"refresh_token": refresh_token})
+    assert response.status_code == 200
+    assert response.json()["detail"] == "Successfully logged out"
