@@ -10,7 +10,11 @@ import jwt
 from jwt.exceptions import InvalidTokenError
 import bcrypt
 
-SECRET_KEY = "e07688bd48255a3312bce8c105688bbd26b83b7afdf7b70ddd03bb7fd7ace41a"
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
