@@ -2,8 +2,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker, relationship
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
 from datetime import datetime
+import os
 
-engine = create_engine("sqlite:///todo.db")
+engine = create_engine(str(os.getenv("DATABASE_URL")))
 
 class Base(DeclarativeBase):
     pass
