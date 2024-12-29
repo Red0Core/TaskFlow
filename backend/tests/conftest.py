@@ -7,7 +7,7 @@ from database import Base, get_db, User
 from routers.auth import get_password_hash
 
 # Настройка тестовой базы данных
-SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///./test_todo.db"
+SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///./db/test_todo.db"
 engine = create_engine(SQLALCHEMY_TEST_DATABASE_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

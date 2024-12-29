@@ -4,6 +4,10 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
 from datetime import datetime
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 engine = create_engine(str(os.getenv("DATABASE_URL")))
 
 class Base(DeclarativeBase):

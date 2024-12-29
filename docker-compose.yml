@@ -1,0 +1,14 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app  # Привязываем локальную папку backend
+      - sqlite_data:/app/db  # Привязываем том для базы данных
+    env_file:
+      - ./backend/.env  # Подключаем переменные окружения из .env
+
+volumes:
+  sqlite_data:  # Определяем том для базы данных
