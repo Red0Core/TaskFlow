@@ -34,7 +34,7 @@
 1. Убедитесь, что Docker установлен и работает.
 2. Запустите проект:
    ```bash
-   docker-compose up --build```
+   docker-compose up --build
 
 ### Локально
 1. Перейдите в папку backend
@@ -42,16 +42,16 @@
    ```bash
    python -m venv venv
    source venv/bin/activate    # Для Linux/macOS
-   venv\Scripts\activate       # Для Windows```
+   venv\Scripts\activate       # Для Windows
 4. Установите зависимости:
    ```bash
-   pip install -r backend/requirements.txt```
+   pip install -r backend/requirements.txt
 5. Если хотите проверить тесты, то ```pytest```
 6. Запустить через uvicorn uvicorn main:app --reload
 
 ---
 
-### **Что дальше?**
+### **📈 Что дальше?**
 
 1. Frontend: Начать разработку клиентской части на Flutter.
 2. PostgreSQL: Перенести проект с SQLite на PostgreSQL.
