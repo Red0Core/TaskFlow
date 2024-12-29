@@ -33,6 +33,13 @@ def test_register_existing_user_with_different_password(client: TestClient, clea
     assert response.status_code == 400
     assert response.json() == {"detail": "Username already exists"}
 
+# Тест регистрации с недостаточной длиной пароля
+def test_register_existing_user(client: TestClient, clean_database):
+    # Регистрация пользователя
+    response = client.post("/auth/register", json={"username": "test_user", "password": "1234567"})
+
+    assert response.status_code == 422
+
 # Тест логина через токен
 def test_login_success(client, create_test_user, clean_database):
     create_test_user(username="testuser", password="testpassword")

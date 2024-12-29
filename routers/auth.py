@@ -1,10 +1,10 @@
+from operator import ge
 from typing import Annotated
 from fastapi import Depends, HTTPException, APIRouter, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from sqlalchemy import desc
 import database
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, constr, Field
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -30,7 +30,10 @@ class UserInDB(BaseModel):
 
 class UserIn(BaseModel):
     username: str
-    password: str
+    password: constr(min_length=8) = Field(
+        description="Пароль пользователя. Минимальная длина — 8 символов.",
+        min_length=8
+    )
     
 def get_user_from_db_by_username(db: Session, username: str):
     user_db = db.query(database.User).filter(database.User.username == username).first()
