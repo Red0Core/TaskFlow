@@ -177,7 +177,8 @@ async def refresh_access_token(refresh_token: RefreshTokenRequest, db: Session =
 
         # Генерируем новый access_token
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = create_access_token(data={"sub": user_id}, expires_delta=access_token_expires)
+        access_token = create_access_token(data={"sub": str(user_id)}, expires_delta=access_token_expires)
+        print(f"New access token: {access_token}")
         return AccessToken(access_token=access_token, token_type="bearer")
 
     except jwt.ExpiredSignatureError:

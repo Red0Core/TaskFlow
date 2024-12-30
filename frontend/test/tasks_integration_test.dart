@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/api/api_client.dart';
@@ -23,17 +24,21 @@ void main() {
       SharedPreferences.setMockInitialValues({});
 
       await authApi.login('testuser', 'password123');
+      await apiClient.refreshAccessToken();
       tasksApi = TasksApi(apiClient);
     });
 
     test('Create a task', () async {
-      final task = await Task.create('Test Task', 'Test Description', tasksApi);
-
-      // Проверяем, что задача создана
-      expect(task.id, isNotNull);
-      expect(task.title, equals('Test Task'));
-      expect(task.description, equals('Test Description'));
-      expect(task.isCompleted, isFalse);
+      try {
+        final task = await Task.create('Test Task', 'Test Description', tasksApi);
+        // Проверяем, что задача создана
+          expect(task.id, isNotNull);
+          expect(task.title, equals('Test Task'));
+          expect(task.description, equals('Test Description'));
+          expect(task.isCompleted, isFalse);
+      } on DioException {
+        throw Exception("не авторизован пон");
+      }
     });
 
     test('Update a task', () async {

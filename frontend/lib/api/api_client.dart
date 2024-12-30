@@ -6,6 +6,8 @@ final log = Logger("ApiClient");
 
 class ApiClient {
   final Dio _dio;
+  int retryCount = 0;
+  static const maxRetries = 3;
   
   ApiClient({String baseUrl = "http://localhost:8000"})
       : _dio = Dio(BaseOptions(
@@ -16,15 +18,25 @@ class ApiClient {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
         // Логика перед отправкой запроса
-        log.info('Запрос: ${options.method} ${options.path}');
+        log.info('Запрос: ${options.method} ${options.path} ${options.headers}');
         return handler.next(options);
       },
       onError: (error, handler) async {
+        log.info('Запрос: ${error.requestOptions.method} ${error.requestOptions.path} ${error.requestOptions.headers}');
         // Логика обработки ошибок
         if (error.response?.statusCode == 401) {
+          if (retryCount >= maxRetries) {
+            log.severe('Достигнут лимит повторных попыток. Прекращение.');
+            return handler.reject(error); // Прерываем обработку
+          }
+          retryCount++;
+
           log.warning('Токен истёк. идет процесс обновления...');
           final success = await refreshAccessToken();
           if (success) {
+            log.info("Старый ${error.requestOptions.headers['Authorization']} : Новый ${_dio.options.headers['Authorization']}");
+            error.requestOptions.headers['Authorization'] = _dio.options.headers['Authorization'];
+            log.info("Заменилось? ${error.requestOptions.headers['Authorization'] != _dio.options.headers['Authorization']}");
             final retryResponse = await _dio.request(
               error.requestOptions.path,
               options: Options(
@@ -34,7 +46,13 @@ class ApiClient {
               data: error.requestOptions.data,
               queryParameters: error.requestOptions.queryParameters,
             );
+            retryCount = 0;
             return handler.resolve(retryResponse);
+          } else {
+            log.severe('Не удалось обновить токен.');
+
+            retryCount = 0;
+            return handler.reject(error);
           }
         }
         return handler.next(error);
@@ -75,7 +93,7 @@ class ApiClient {
       final String newAccessToken = response.data['access_token'];
       addToken(newAccessToken);
       await prefs.setString('access_token', newAccessToken);
-      log.info('Access token успешно обновлён');
+      log.info('Access token успешно обновлён $newAccessToken');
       return true;
     } catch (e) {
       log.severe('Ошибка обновления access_token: $e');
