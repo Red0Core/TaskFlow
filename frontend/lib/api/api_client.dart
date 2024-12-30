@@ -10,8 +10,8 @@ class ApiClient {
   ApiClient({String baseUrl = "http://localhost:8000"})
       : _dio = Dio(BaseOptions(
           baseUrl: baseUrl,
-          connectTimeout: Duration(seconds: 5),
-          receiveTimeout: Duration(seconds: 3),
+          connectTimeout: const Duration(seconds: 5),
+          receiveTimeout: const Duration(seconds: 3),
         )) {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {

@@ -27,8 +27,8 @@ void main() {
     expect(accessToken, isNotNull, reason: 'Access token должен быть сохранён');
     expect(refreshToken, isNotNull, reason: 'Refresh token должен быть сохранён');
 
-    print('Access Token: $accessToken');
-    print('Refresh Token: $refreshToken');
+    log.info('Access Token: $accessToken');
+    log.info('Refresh Token: $refreshToken');
   });
 
   test('Логин с неверными данными возвращает ошибку', () async {

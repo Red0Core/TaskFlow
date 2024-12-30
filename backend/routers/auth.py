@@ -145,8 +145,9 @@ async def login_for_access_token(
     refresh_token, refresh_exp = create_refresh_token(user_id=user.id)
 
     # Сохраняем refresh_token в базе
-    db.add(database.RefreshToken(user_id=user.id, token=refresh_token, expires_at=refresh_exp))
-    db.commit()
+    if not db.query(database.RefreshToken).filter(database.RefreshToken.token == refresh_token).first():
+        db.add(database.RefreshToken(user_id=user.id, token=refresh_token, expires_at=refresh_exp))
+        db.commit()
 
     return RefreshToken(refresh_token=refresh_token, access_token=access_token, token_type="bearer")
 
