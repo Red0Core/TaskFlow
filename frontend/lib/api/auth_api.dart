@@ -19,6 +19,9 @@ class AuthApi {
       }
     } catch (e) {
       log.warning('Ошибка при входе: $e');
+      if (e is DioException) {
+        throw Exception('Ошибка сервера: ${e.response?.data}');
+      }
     }
   }
 
@@ -48,7 +51,7 @@ class AuthApi {
         if (e.response?.statusCode == 401) {
           throw Exception('Неверные учетные данные');
         }
-        throw Exception('Ошибка сервера: ${e.response?.statusMessage}');
+        throw Exception('Ошибка сервера: ${e.response?.data}');
       }
       throw Exception('Неизвестная ошибка: $e');
     }

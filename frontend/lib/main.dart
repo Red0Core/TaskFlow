@@ -42,7 +42,7 @@ class TaskApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginScreen(authApi: authApi),
         '/register': (context) => RegisterScreen(authApi: authApi),
-        '/tasks': (context) => TaskListScreen(tasksApi: tasksApi),
+        '/tasks': (context) => TaskListScreen(tasksApi: tasksApi, authApi: authApi),
       },
     );
   }
