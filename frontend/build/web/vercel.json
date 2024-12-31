@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",  // Перенаправляет все запросы, начинающиеся с /api
+      "source": "/api/:path*",
       "destination": "https://taskflow-112i.onrender.com/api/:path*"
     }
   ]
