@@ -22818,7 +22818,7 @@ _.L$=b
 _.K$=_.a3$=0},
 Ix:function Ix(){},
 a5g:function a5g(a){this.a=a},
-ayt(){var s="http://localhost:8000",r=A.ayz(s,B.Cn,B.Ck),q=new A.Wr($,new A.GX(A.b([B.zz],t.i6)),$,new A.ZI(51200),!1)
+ayt(){var s="http://localhost:8000/api",r=A.ayz(s,B.Cn,B.Ck),q=new A.Wr($,new A.GX(A.b([B.zz],t.i6)),$,new A.ZI(51200),!1)
 q.mU$=r
 q.R7$=new A.Uw(A.al(t.lZ))
 r=new A.TS(q)

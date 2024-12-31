@@ -5,9 +5,12 @@ from routers import auth, tasks
 app = FastAPI()
 
 origins = [
-    "http://localhost",
+    "http://localhost:80",
     "http://localhost:8080",
     "http://localhost:3000",
+    "http://127.0.0.1:8080",
+    "http://127.0.0.1:80",
+    "http://127.0.0.1:3000"
 ]
 
 app.add_middleware(
@@ -18,5 +21,5 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
-app.include_router(auth.router, tags=['Authentication'])
-app.include_router(tasks.router, tags=['Tasks'])
+app.include_router(auth.router, tags=['Authentication'], prefix="/api")
+app.include_router(tasks.router, tags=['Tasks'], prefix="/api")

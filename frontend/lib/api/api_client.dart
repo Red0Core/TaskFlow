@@ -9,7 +9,7 @@ class ApiClient {
   int retryCount = 0;
   static const maxRetries = 3;
   
-  ApiClient({String baseUrl = "http://localhost:8000"})
+  ApiClient({String baseUrl = "http://localhost:8000/api"})
       : _dio = Dio(BaseOptions(
           baseUrl: baseUrl,
           connectTimeout: const Duration(seconds: 5),

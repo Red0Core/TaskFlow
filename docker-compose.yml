@@ -10,5 +10,14 @@ services:
     env_file:
       - ./backend/.env  # Подключаем переменные окружения из .env
 
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/nginx.conf
+      - ./frontend/build/web:/usr/share/nginx/html
+
 volumes:
   sqlite_data:  # Определяем том для базы данных
