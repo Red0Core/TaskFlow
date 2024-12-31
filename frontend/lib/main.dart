@@ -17,7 +17,7 @@ void _setupLogging() {
 
 void main() async {
   _setupLogging();
-  final apiClient = ApiClient();
+  final apiClient = ApiClient(baseUrl: "https://task-flow-9e9y.vercel.app/api");
   String initialRoute = "/login";
   if (await apiClient.refreshAccessToken()) {
     initialRoute = "/tasks";

@@ -22818,12 +22818,12 @@ _.L$=b
 _.K$=_.a3$=0},
 Ix:function Ix(){},
 a5g:function a5g(a){this.a=a},
-ayt(){var s="http://localhost:8000/api",r=A.ayz(s,B.Cn,B.Ck),q=new A.Wr($,new A.GX(A.b([B.zz],t.i6)),$,new A.ZI(51200),!1)
-q.mU$=r
-q.R7$=new A.Uw(A.al(t.lZ))
-r=new A.TS(q)
-r.Zt(s)
-return r},
+ayt(a){var s=A.ayz(a,B.Cn,B.Ck),r=new A.Wr($,new A.GX(A.b([B.zz],t.i6)),$,new A.ZI(51200),!1)
+r.mU$=s
+r.R7$=new A.Uw(A.al(t.lZ))
+s=new A.TS(r)
+s.Zt(a)
+return s},
 TS:function TS(a){this.a=a
 this.b=0},
 TT:function TT(){},
@@ -22839,7 +22839,7 @@ s.KM().kC(new A.ak0())},
 akV(){var s=0,r=A.I(t.H),q,p,o,n,m,l,k,j,i,h,g
 var $async$akV=A.J(function(a,b){if(a===1)return A.F(b,r)
 while(true)switch(s){case 0:A.aH8()
-q=A.ayt()
+q=A.ayt("https://task-flow-9e9y.vercel.app/api")
 s=2
 return A.M(q.nj(),$async$akV)
 case 2:p=b?"/tasks":"/login"
