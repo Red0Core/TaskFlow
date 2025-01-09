@@ -11,6 +11,31 @@ SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///./db/test_todo.db"
 engine = create_engine(SQLALCHEMY_TEST_DATABASE_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+class APIClient:
+    def __init__(self, client: TestClient, prefix: str = "/api"):
+        self.client = client
+        self.prefix = prefix
+
+    def get(self, url, **kwargs):
+        return self.client.get(self.prefix + url, **kwargs)
+
+    def post(self, url, **kwargs):
+        return self.client.post(self.prefix + url, **kwargs)
+
+    def put(self, url, **kwargs):
+        return self.client.put(self.prefix + url, **kwargs)
+
+    def delete(self, url, **kwargs):
+        return self.client.delete(self.prefix + url, **kwargs)
+
+    def patch(self, url, **kwargs):
+        return self.client.patch(self.prefix + url, **kwargs)
+
+@pytest.fixture
+def client(scope='session'):
+    test_client = TestClient(app)
+    return APIClient(test_client)
+
 # Фикстура для тестовой базы данных
 @pytest.fixture(scope="function")
 def db_session():
@@ -35,12 +60,6 @@ def override_get_db(db_session):
         finally:
             pass
     app.dependency_overrides[get_db] = _override_get_db
-
-# Фикстура для TestClient
-@pytest.fixture(scope="function")
-def client():
-    """Клиент для тестирования приложения FastAPI."""
-    return TestClient(app)
 
 # Автоматическая очистка базы данных
 @pytest.fixture(scope="function", autouse=True)

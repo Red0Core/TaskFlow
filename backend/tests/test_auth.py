@@ -57,6 +57,8 @@ def test_login_success(client, create_test_user, clean_database):
     # Расшифровываем токен для проверки структуры
     SECRET_KEY = os.getenv("SECRET_KEY")
     ALGORITHM = os.getenv("ALGORITHM")
+    assert SECRET_KEY is not None
+    assert ALGORITHM is not None
 
     for decoded_token in [
         jwt.decode(response.json()['access_token'], SECRET_KEY, algorithms=[ALGORITHM]),
