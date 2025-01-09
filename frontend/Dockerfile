@@ -1,8 +1,19 @@
+FROM ghcr.io/cirruslabs/flutter:latest
+
+# Устанавливаем рабочую директорию
+WORKDIR /frontend
+
+# Копируем проект во временную директорию
+COPY ./lib ./lib
+
+# Устанавливаем зависимости и собираем веб-приложение
+RUN flutter create . --platforms web && flutter config --enable-web && flutter pub get && flutter build web --wasm
+
 # Используем официальный образ Nginx
 FROM nginx:alpine
 
 # Копируем статические файлы Flutter Web в папку для раздачи
-COPY build/web /usr/share/nginx/html
+COPY --from=0 /frontend/build/web /usr/share/nginx/html
 
 # Копируем конфигурацию Nginx
 COPY nginx.conf /etc/nginx/nginx.conf
