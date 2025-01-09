@@ -5,9 +5,11 @@ WORKDIR /frontend
 
 # Копируем проект во временную директорию
 COPY ./lib ./lib
+COPY ./pubspec.yaml ./pubspec.yaml
 
+RUN flutter create . --platforms web && flutter config --enable-web
 # Устанавливаем зависимости и собираем веб-приложение
-RUN flutter create . --platforms web && flutter config --enable-web && flutter pub get && flutter build web --wasm
+RUN flutter pub get && flutter build web --wasm
 
 # Используем официальный образ Nginx
 FROM nginx:alpine
