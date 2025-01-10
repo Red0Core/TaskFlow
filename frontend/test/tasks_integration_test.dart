@@ -17,7 +17,7 @@ void main() {
   group("Task integration tests", () {
     setUp(() async {
       // Настройка реального клиента
-      apiClient = ApiClient(baseUrl: 'http://127.0.0.1:8000');
+      apiClient = ApiClient(baseUrl: 'http://127.0.0.1:8000/api');
       authApi = AuthApi(apiClient);
 
       // Очистка SharedPreferences перед каждым тестом
