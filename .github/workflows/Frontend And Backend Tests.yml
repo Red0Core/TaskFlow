@@ -9,27 +9,28 @@ on:
       - master
 
 jobs:
-  backend-test:
+  integration-tests:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    # Backend Setup and Tests
     - name: Set up Python
+      working-directory: backend
       uses: actions/setup-python@v5
       with:
         python-version: '3.13'
 
     - name: Install dependencies
-      run: |
+      working-directory: backend
+      run:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Create .env file
+    - name: Create .env file for backend
+      working-directory: backend
       run: |
         echo "DATABASE_URL=sqlite:///./db/todo.db" >> .env
         echo "SECRET_KEY=f0520f3a5a8834b9ab2dbbc57d5988b8db20db8bfbe8e64fa1abc3e22141e23c" >> .env
@@ -38,31 +39,39 @@ jobs:
         echo "REFRESH_TOKEN_EXPIRE_DAYS=7" >> .env
 
     - name: Create test SQLite DB file
-      run: |
+      working-directory: backend
+      run:
         mkdir db
-        touch ./db/todo_test.db
+        touch db/todo_test.db
 
     - name: Run tests
-      run: pytest 
-
-  frontend-test:
-    runs-on: ubuntu-latest
-    defaults:
+      working-directory: backend
       run:
-        working-directory: frontend
+        pytest
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - name: Start backend server for integration tests on frontend
+      working-directory: backend
+      run:
+        nohup uvicorn main:app --host 0.0.0.0 --port 8000 &
+      continue-on-error: true
 
+
+    # Frontend Setup and Tests
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
+      working-directory: frontend
       with:
         channel: stable
+
     - run: flutter --version
+      working-directory: frontend
 
     - name: Install dependencies
-      run: flutter pub get
+      working-directory: frontend
+      run:
+        flutter pub get
 
     - name: Run tests
-      run: flutter test
+      working-directory: frontend
+      run:
+        flutter test
