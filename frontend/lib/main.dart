@@ -6,6 +6,7 @@ import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/register_screen.dart';
 import 'screens/task_list_screen.dart';
 import 'package:logging/logging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void _setupLogging() {
   Logger.root.level = Level.ALL; // Установите уровень логирования
@@ -17,7 +18,11 @@ void _setupLogging() {
 
 void main() async {
   _setupLogging();
-  final apiClient = ApiClient(baseUrl: "${Uri.base.scheme}://${Uri.base.host}${(Uri.base.hasPort ? ":${Uri.base.port}" : "")}/api");
+  final SharedPreferencesAsync prefs = SharedPreferencesAsync();
+  final apiClient = ApiClient(
+    baseUrl: "${Uri.base.scheme}://${Uri.base.host}${(Uri.base.hasPort ? ":${Uri.base.port}" : "")}/api",
+    prefs
+  );
   String initialRoute = "/login";
   if (await apiClient.refreshAccessToken()) {
     initialRoute = "/tasks";

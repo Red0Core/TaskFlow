@@ -8,13 +8,17 @@ class ApiClient {
   final Dio _dio;
   int retryCount = 0;
   static const maxRetries = 3;
+
+  final SharedPreferencesAsync prefs;
   
-  ApiClient({String baseUrl = "http://localhost:8000/api"})
+  ApiClient(SharedPreferencesAsync sharedPreferences, {String baseUrl = "http://localhost:8000/api"})
       : _dio = Dio(BaseOptions(
           baseUrl: baseUrl,
           connectTimeout: const Duration(seconds: 5),
           receiveTimeout: const Duration(seconds: 3),
-        )) {
+        )),
+        prefs = sharedPreferences
+  {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
         // Логика перед отправкой запроса
@@ -79,8 +83,7 @@ class ApiClient {
 
   Future<bool> refreshAccessToken() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final refreshToken = prefs.getString('refresh_token');
+      final refreshToken = await prefs.getString('refresh_token');
       if (refreshToken == null) {
         log.severe('Refresh token отсутствует');
         return false;

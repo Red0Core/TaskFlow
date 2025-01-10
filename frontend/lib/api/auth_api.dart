@@ -79,9 +79,8 @@ class AuthApi {
       apiClient.addToken(accessToken);
       log.info('Успешный вход!');
 
-      final SharedPreferencesAsync prefs = SharedPreferencesAsync();
-      await prefs.setString('refresh_token', response.data['refresh_token']);
-      await prefs.setString('access_token', response.data['access_token']);
+      await apiClient.prefs.setString('refresh_token', response.data['refresh_token']);
+      await apiClient.prefs.setString('access_token', response.data['access_token']);
       log.info('Refresh token сохранен');
     } on DioException catch (e) {
         log.warning('Ошибка при входе: $e');
@@ -96,15 +95,14 @@ class AuthApi {
   }
 
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
     try {
       await apiClient.client.post('/auth/logout', data: {
-        'refresh_token': prefs.get("refresh_token")
+        'refresh_token': await apiClient.prefs.getString("refresh_token")
       });
     } catch (e) {
       log.warning('Ошибка при выходе: $e');
     }
-    await prefs.remove('refresh_token');
+    await apiClient.prefs.remove('refresh_token');
     apiClient.removeToken();
     log.info('Пользователь вышел');
   }
