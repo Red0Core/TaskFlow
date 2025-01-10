@@ -72,11 +72,15 @@ jobs:
         flutter pub get
 
     - name: Run auth integration test
-      working-directory: frontend
-      run:
-        flutter test integration_test/auth_integration_test.dart -d linux -r github
+      uses: gabrielbb/xvfb-action@v1
+      with:
+        working-directory: frontend
+        run:
+          flutter test integration_test/auth_integration_test.dart -d linux -r github
 
     - name: Run tasks integration test
-      working-directory: frontend
-      run:
-        flutter test integration_test/tasks_integration_test.dart -d linux -r github
+      uses: gabrielbb/xvfb-action@v1
+      with:
+        working-directory: frontend
+        run:
+          flutter test integration_test/tasks_integration_test.dart -d linux -r github
