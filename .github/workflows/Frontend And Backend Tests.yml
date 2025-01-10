@@ -70,7 +70,7 @@ jobs:
       working-directory: frontend
       run: |
         flutter pub get
-        flutter create --platforms=linux
+        flutter create . --platforms=linux
 
     - name: Run auth integration test
       uses: gabrielbb/xvfb-action@v1
