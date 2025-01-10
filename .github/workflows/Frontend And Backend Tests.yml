@@ -31,14 +31,14 @@ jobs:
 
     - name: Create .env file
       run: |
-        echo "DATABASE_URL=sqlite:///app/db/todo_test.db" >> .env
+        echo "DATABASE_URL=sqlite:///todo_test.db" >> .env
         echo "SECRET_KEY=f0520f3a5a8834b9ab2dbbc57d5988b8db20db8bfbe8e64fa1abc3e22141e23c" >> .env
         echo "ALGORITHM=HS256" >> .env
         echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> .env
         echo "REFRESH_TOKEN_EXPIRE_DAYS=7" >> .env
 
     - name: Create test SQLite DB file
-      run: touch app/db/todo_test.db
+      run: touch todo_test.db
 
     - name: Run tests
       run: pytest 
@@ -57,7 +57,7 @@ jobs:
       uses: subosito/flutter-action@v2
       with:
         channel: 'stable'
-        flutter-version-file: pubspec.yaml
+        flutter-version-file: frontend/pubspec.yaml
 
     - name: Install dependencies
       run: flutter pub get
