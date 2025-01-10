@@ -23,14 +23,14 @@ void main() {
       apiClient = ApiClient(baseUrl: 'http://127.0.0.1:8000/api');
       authApi = AuthApi(apiClient);
 
-      // Регистрация пользователя
-      await authApi.register('testuser', 'password123');
-
       // Очистка SharedPreferences перед каждым тестом
       SharedPreferences.setMockInitialValues({});
     });
 
     test('Успешный логин сохраняет токены', () async {
+      // Регистрация пользователя
+      await authApi.register('testuser', 'password123');
+
       // Выполняем реальный запрос к вашему API
       await authApi.login('testuser', 'password123');
 
@@ -46,6 +46,9 @@ void main() {
     });
 
     test('Логин с неверными данными возвращает ошибку', () async {
+      // Регистрация пользователя
+      await authApi.register('testuser', 'password123');
+
       // Проверяем, что неверный логин вызывает исключение
       expect(
         () async => await authApi.login('testuser', 'wrongpassword'),
@@ -54,6 +57,9 @@ void main() {
     });
 
     test('Успешный логин сохраняет токены и вызывает refresh', () async {
+      // Регистрация пользователя
+      await authApi.register('testuser', 'password123');
+
       // Выполняем реальный запрос к вашему API
       await authApi.login('testuser', 'password123');
 

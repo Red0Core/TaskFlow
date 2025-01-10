@@ -23,22 +23,24 @@ void main() {
       // Очистка SharedPreferences перед каждым тестом
       SharedPreferences.setMockInitialValues({});
 
-      await authApi.login('testuser', 'password123');
-      await apiClient.refreshAccessToken();
+      // Логинимся или регистрируемся и логинимся
+      try {
+        await authApi.login('testuser', 'password123');
+      } on DioException {
+        await authApi.register('testuser', 'password123');
+        await authApi.login('testuser', 'password123');
+      }
+
       tasksApi = TasksApi(apiClient);
     });
 
     test('Create a task', () async {
-      try {
-        final task = await Task.create('Test Task', 'Test Description', tasksApi);
-        // Проверяем, что задача создана
-          expect(task.id, isNotNull);
-          expect(task.title, equals('Test Task'));
-          expect(task.description, equals('Test Description'));
-          expect(task.isCompleted, isFalse);
-      } on DioException {
-        throw Exception("не авторизован пон");
-      }
+      final task = await Task.create('Test Task', 'Test Description', tasksApi);
+      // Проверяем, что задача создана
+        expect(task.id, isNotNull);
+        expect(task.title, equals('Test Task'));
+        expect(task.description, equals('Test Description'));
+        expect(task.isCompleted, isFalse);
     });
 
     test('Update a task', () async {
