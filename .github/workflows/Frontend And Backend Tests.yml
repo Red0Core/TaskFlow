@@ -69,6 +69,8 @@ jobs:
     - name: Install dependencies
       working-directory: frontend
       run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build cmake
         flutter pub get
         flutter create . --platforms=linux
 
