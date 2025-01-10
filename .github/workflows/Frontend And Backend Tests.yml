@@ -31,6 +31,7 @@ jobs:
 
     - name: Create .env file
       run: |
+        echo "DATABASE_URL=sqlite:///./db/todo.db" >> .env
         echo "SECRET_KEY=f0520f3a5a8834b9ab2dbbc57d5988b8db20db8bfbe8e64fa1abc3e22141e23c" >> .env
         echo "ALGORITHM=HS256" >> .env
         echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> .env
@@ -59,7 +60,6 @@ jobs:
       with:
         channel: 'stable'
         flutter-version: 'stable'
-        flutter-version-file: frontend/pubspec.yaml
 
     - name: Install dependencies
       run: flutter pub get
