@@ -1,0 +1,180 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+  release:
+    types:
+      - published
+
+permissions:
+  contents: write
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Backend Setup and Tests
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+        cache: 'pip'
+        cache-dependency-path: backend/requirements.txt
+
+    - name: Install dependencies
+      working-directory: backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Create .env file for backend
+      working-directory: backend
+      run: |
+        echo "DATABASE_URL=sqlite:///./db/todo.db" >> .env
+        echo "SECRET_KEY=f0520f3a5a8834b9ab2dbbc57d5988b8db20db8bfbe8e64fa1abc3e22141e23c" >> .env
+        echo "ALGORITHM=HS256" >> .env
+        echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> .env
+        echo "REFRESH_TOKEN_EXPIRE_DAYS=7" >> .env
+
+    - name: Create test SQLite DB file
+      working-directory: backend
+      run:
+        mkdir db
+        touch db/todo_test.db
+
+    - name: Run tests
+      working-directory: backend
+      run:
+        pytest
+
+    - name: Start backend server for integration tests on frontend
+      working-directory: backend
+      run:
+        nohup uvicorn main:app --host 0.0.0.0 --port 8000 &
+      continue-on-error: false # Without Backend server Frontend Tests will fail
+
+    # Frontend Setup and Tests
+    - name: Cache Flutter dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.pub-cache
+        key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-flutter-
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        cache: true
+        channel: stable
+
+    - run: flutter --version
+      working-directory: frontend
+
+    - name: Install dependencies
+      working-directory: frontend
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build cmake libgtk-3-dev libblkid-dev liblzma-dev
+        flutter pub get
+        flutter create . --platforms=linux
+
+    - name: Run auth integration test
+      uses: gabrielbb/xvfb-action@v1
+      with:
+        working-directory: frontend
+        run:
+          flutter test integration_test/auth_integration_test.dart -d linux -r github
+
+    - name: Run tasks integration test
+      uses: gabrielbb/xvfb-action@v1
+      with:
+        working-directory: frontend
+        run:
+          flutter test integration_test/tasks_integration_test.dart -d linux -r github
+
+  build-and-release:
+    needs: integration-tests
+    defaults:
+      run:
+        working-directory: frontend
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest] # Указываем разные хосты
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Cache Flutter dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.pub-cache
+        key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-flutter-
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        cache: true
+        channel: stable
+
+    - name: Install dependencies on Linux
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        flutter pub get
+        sudo apt-get update
+        sudo apt-get install -y ninja-build cmake libgtk-3-dev libblkid-dev liblzma-dev
+        flutter create . --platforms=linux
+        flutter config --enable-linux-desktop
+
+    - name: Instal dependencies on Windows
+      if: matrix.os == 'windows-latest'
+      run: |
+        flutter pub get
+        flutter create . --platforms=windows
+        flutter config --enable-windows-desktop
+
+    - name: Build App for Windows
+      if: matrix.os == 'windows-latest'
+      run: flutter build windows --dart-define=BASE_API_URL=https://taskflow-112i.onrender.com/api/
+
+    - name: Build App for Linux
+      if: matrix.os == 'ubuntu-latest'
+      run: flutter build linux --dart-define=BASE_API_URL=https://taskflow-112i.onrender.com/api/
+
+    # Prepare release assets
+    - name: Prepare release assets for Windows
+      if: matrix.os == 'windows-latest'
+      shell: pwsh # Для Windows
+      run: |
+        mkdir release-assets\windows
+        Copy-Item -Path build\windows\runner\Release\* -Destination release-assets\windows -Recurse
+
+    - name: Prepare release assets for Linux
+      if: matrix.os == 'ubuntu-latest'
+      shell: bash
+      run: |
+        mkdir -p release-assets/linux
+        cp -r build/linux/x64/release/bundle/* release-assets/linux/
+
+    # Upload release assets to GitHub
+    - name: Upload Release Assets
+      uses: softprops/action-gh-release@v2.2.1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          release-assets/linux/**/*
+          release-assets/windows/**/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

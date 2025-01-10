@@ -20,7 +20,7 @@ void main() async {
   _setupLogging();
   final SharedPreferencesAsync prefs = SharedPreferencesAsync();
   final apiClient = ApiClient(
-    baseUrl: "${Uri.base.scheme}://${Uri.base.host}${(Uri.base.hasPort ? ":${Uri.base.port}" : "")}/api",
+    baseUrl: const String.fromEnvironment("BASE_API_URL", defaultValue: "http://localhost:8080/api"),
     prefs
   );
   String initialRoute = "/login";
