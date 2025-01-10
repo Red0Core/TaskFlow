@@ -20,9 +20,6 @@ void main() {
       apiClient = ApiClient(baseUrl: 'http://127.0.0.1:8000/api');
       authApi = AuthApi(apiClient);
 
-      // Очистка SharedPreferences перед каждым тестом
-      SharedPreferences.setMockInitialValues({});
-
       // Логинимся или регистрируемся и логинимся
       try {
         await authApi.login('testuser', 'password123');

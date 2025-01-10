@@ -79,7 +79,7 @@ class AuthApi {
       apiClient.addToken(accessToken);
       log.info('Успешный вход!');
 
-      final prefs = await SharedPreferences.getInstance();
+      final SharedPreferencesAsync prefs = SharedPreferencesAsync();
       await prefs.setString('refresh_token', response.data['refresh_token']);
       await prefs.setString('access_token', response.data['access_token']);
       log.info('Refresh token сохранен');

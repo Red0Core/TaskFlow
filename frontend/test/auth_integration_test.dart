@@ -37,9 +37,9 @@ void main() {
       // Аутентификация пользователя
       await authApi.login('testuser', 'password123');
 
-      final prefs = await SharedPreferences.getInstance();
-      final accessToken = prefs.getString('access_token');
-      final refreshToken = prefs.getString('refresh_token');
+      final SharedPreferencesAsync prefs = SharedPreferencesAsync();
+      final accessToken = await prefs.getString('access_token');
+      final refreshToken = await prefs.getString('refresh_token');
 
       expect(accessToken, isNotNull, reason: 'Access token должен быть сохранён');
       expect(refreshToken, isNotNull, reason: 'Refresh token должен быть сохранён');
