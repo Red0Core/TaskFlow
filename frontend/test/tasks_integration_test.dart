@@ -26,7 +26,7 @@ void main() {
       // Логинимся или регистрируемся и логинимся
       try {
         await authApi.login('testuser', 'password123');
-      } on DioException {
+      } on AuthenticationException {
         await authApi.register('testuser', 'password123');
         await authApi.login('testuser', 'password123');
       }
