@@ -17,61 +17,66 @@ void main() {
   late ApiClient apiClient;
   late AuthApi authApi;
 
-  setUp(() {
-    // Настройка реального клиента
-    apiClient = ApiClient(baseUrl: 'http://127.0.0.1:8000/api');
-    authApi = AuthApi(apiClient);
+  group("Auth integration tests", () {
+    setUp(() async {
+      // Настройка реального клиента
+      apiClient = ApiClient(baseUrl: 'http://127.0.0.1:8000/api');
+      authApi = AuthApi(apiClient);
 
-    // Очистка SharedPreferences перед каждым тестом
-    SharedPreferences.setMockInitialValues({});
-  });
+      // Регистрация пользователя
+      await authApi.register('testuser', 'password123');
 
-  test('Успешный логин сохраняет токены', () async {
-    // Выполняем реальный запрос к вашему API
-    await authApi.login('testuser', 'password123');
+      // Очистка SharedPreferences перед каждым тестом
+      SharedPreferences.setMockInitialValues({});
+    });
 
-    final prefs = await SharedPreferences.getInstance();
-    final accessToken = prefs.getString('access_token');
-    final refreshToken = prefs.getString('refresh_token');
+    test('Успешный логин сохраняет токены', () async {
+      // Выполняем реальный запрос к вашему API
+      await authApi.login('testuser', 'password123');
 
-    expect(accessToken, isNotNull, reason: 'Access token должен быть сохранён');
-    expect(refreshToken, isNotNull, reason: 'Refresh token должен быть сохранён');
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+      final refreshToken = prefs.getString('refresh_token');
 
-    log.info('Access Token: $accessToken');
-    log.info('Refresh Token: $refreshToken');
-  });
+      expect(accessToken, isNotNull, reason: 'Access token должен быть сохранён');
+      expect(refreshToken, isNotNull, reason: 'Refresh token должен быть сохранён');
 
-  test('Логин с неверными данными возвращает ошибку', () async {
-    // Проверяем, что неверный логин вызывает исключение
-    expect(
-      () async => await authApi.login('testuser', 'wrongpassword'),
-      throwsException,
-    );
-  });
+      log.info('Access Token: $accessToken');
+      log.info('Refresh Token: $refreshToken');
+    });
 
-  test('Успешный логин сохраняет токены и вызывает refresh', () async {
-    // Выполняем реальный запрос к вашему API
-    await authApi.login('testuser', 'password123');
+    test('Логин с неверными данными возвращает ошибку', () async {
+      // Проверяем, что неверный логин вызывает исключение
+      expect(
+        () async => await authApi.login('testuser', 'wrongpassword'),
+        throwsException,
+      );
+    });
 
-    final prefs = await SharedPreferences.getInstance();
-    final accessTokenOld = prefs.getString('access_token');
-    final refreshTokenOld = prefs.getString('refresh_token');
+    test('Успешный логин сохраняет токены и вызывает refresh', () async {
+      // Выполняем реальный запрос к вашему API
+      await authApi.login('testuser', 'password123');
 
-    expect(accessTokenOld, isNotNull, reason: 'Access token должен быть сохранён');
-    expect(refreshTokenOld, isNotNull, reason: 'Refresh token должен быть сохранён');
+      final prefs = await SharedPreferences.getInstance();
+      final accessTokenOld = prefs.getString('access_token');
+      final refreshTokenOld = prefs.getString('refresh_token');
 
-    log.info('Access Token: $accessTokenOld');
-    log.info('Refresh Token: $refreshTokenOld');
+      expect(accessTokenOld, isNotNull, reason: 'Access token должен быть сохранён');
+      expect(refreshTokenOld, isNotNull, reason: 'Refresh token должен быть сохранён');
 
-    await apiClient.refreshAccessToken();
+      log.info('Access Token: $accessTokenOld');
+      log.info('Refresh Token: $refreshTokenOld');
 
-    final accessToken = prefs.getString('access_token');
-    final refreshToken = prefs.getString('refresh_token');
+      await apiClient.refreshAccessToken();
 
-    expect(accessToken, isNotNull, reason: 'Access token должен быть сохранён');
-    expect(refreshToken, isNotNull, reason: 'Refresh token должен быть сохранён');
+      final accessToken = prefs.getString('access_token');
+      final refreshToken = prefs.getString('refresh_token');
 
-    log.info('Access Token: $accessToken');
-    log.info('Refresh Token: $refreshToken');
+      expect(accessToken, isNotNull, reason: 'Access token должен быть сохранён');
+      expect(refreshToken, isNotNull, reason: 'Refresh token должен быть сохранён');
+
+      log.info('Access Token: $accessToken');
+      log.info('Refresh Token: $refreshToken');
+    });
   });
 }

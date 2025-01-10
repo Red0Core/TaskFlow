@@ -11,7 +11,7 @@ on:
 jobs:
   integration-tests:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -52,8 +52,7 @@ jobs:
       working-directory: backend
       run:
         nohup uvicorn main:app --host 0.0.0.0 --port 8000 &
-      continue-on-error: true
-
+      continue-on-error: false # Without Backend server Frontend Tests will fail
 
     # Frontend Setup and Tests
     - name: Set up Flutter
