@@ -18,7 +18,6 @@ jobs:
 
     # Backend Setup and Tests
     - name: Set up Python
-      working-directory: backend
       uses: actions/setup-python@v5
       with:
         python-version: '3.13'
@@ -59,7 +58,6 @@ jobs:
     # Frontend Setup and Tests
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
-      working-directory: frontend
       with:
         channel: stable
 
