@@ -26,6 +26,15 @@ class UnknownException implements Exception {
   String toString() => 'UnknownException: $message';
 }
 
+class UsernameAlreadyExistsException implements Exception {
+  final String message;
+  UsernameAlreadyExistsException(this.message);
+
+  @override
+  String toString() => 'UsernameAlreadyExistsException: $message';
+}
+
+
 class AuthApi {
   final ApiClient apiClient;
 
@@ -37,14 +46,21 @@ class AuthApi {
         'username': username,
         'password': password,
       });
+
       if (response.data['username'] == username) {
         log.info("Успешная регистрация!");
       }
-    } catch (e) {
-      log.warning('Ошибка при входе: $e');
-      if (e is DioException) {
-        throw Exception('Ошибка сервера: ${e.response?.data}');
+    } on DioException catch (e) {
+      log.warning('Ошибка при регистрации: ${e.response?.data}');
+      if (e.response?.statusCode == 409) {
+        // Код 409: Conflict (обычно используется для ошибок вроде "username already exists")
+        throw UsernameAlreadyExistsException(
+            'Имя пользователя уже зарегистрировано.');
       }
+      throw ServerException(
+          'Ошибка сервера: ${e.response?.data ?? 'Неизвестная ошибка'}');
+    } catch (e) {
+      throw UnknownException('Неизвестная ошибка: $e');
     }
   }
 

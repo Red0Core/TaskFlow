@@ -111,7 +111,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Se
 async def register_user(user: UserIn, db: Session = Depends(database.get_db)):
     existing_user = db.query(database.User).filter(database.User.username == user.username).first()
     if existing_user:
-        raise HTTPException(status_code=400, detail="Username already exists")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already exists")
     
     user_db = database.User(username=user.username, hashed_password=get_password_hash(user.password))
     db.add(user_db)

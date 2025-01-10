@@ -22,16 +22,19 @@ void main() {
       // Настройка реального клиента
       apiClient = ApiClient(baseUrl: 'http://127.0.0.1:8000/api');
       authApi = AuthApi(apiClient);
-
+      // Аутентификация пользователя
+      try {
+        await authApi.register('testuser', 'password123');
+      } on UsernameAlreadyExistsException {
+        await authApi.login('testuser', 'password123');
+      }
+      
       // Очистка SharedPreferences перед каждым тестом
       SharedPreferences.setMockInitialValues({});
     });
 
     test('Успешный логин сохраняет токены', () async {
-      // Регистрация пользователя
-      await authApi.register('testuser', 'password123');
-
-      // Выполняем реальный запрос к вашему API
+      // Аутентификация пользователя
       await authApi.login('testuser', 'password123');
 
       final prefs = await SharedPreferences.getInstance();
@@ -43,26 +46,21 @@ void main() {
 
       log.info('Access Token: $accessToken');
       log.info('Refresh Token: $refreshToken');
+
+      await authApi.logout();
     });
 
     test('Логин с неверными данными возвращает ошибку', () async {
-      // Регистрация пользователя
-      await authApi.register('testuser', 'password123');
-
       // Проверяем, что неверный логин вызывает исключение
       expect(
         () async => await authApi.login('testuser', 'wrongpassword'),
         throwsException,
       );
+
+      await authApi.logout();
     });
 
     test('Успешный логин сохраняет токены и вызывает refresh', () async {
-      // Регистрация пользователя
-      await authApi.register('testuser', 'password123');
-
-      // Выполняем реальный запрос к вашему API
-      await authApi.login('testuser', 'password123');
-
       final prefs = await SharedPreferences.getInstance();
       final accessTokenOld = prefs.getString('access_token');
       final refreshTokenOld = prefs.getString('refresh_token');
