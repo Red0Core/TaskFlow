@@ -20,7 +20,7 @@ def test_register_existing_user(client: TestClient, clean_database):
         "/auth/register",
         json={"username": "test_user", "password": "secure_password"}
     )
-    assert response.status_code == 400
+    assert response.status_code == 409
     assert response.json() == {"detail": "Username already exists"}
 
 # Тест регистрации с уже существующим пользователем
@@ -32,7 +32,7 @@ def test_register_existing_user_with_different_password(client: TestClient, clea
         "/auth/register",
         json={"username": "test_user", "password": "another_password"}
     )
-    assert response.status_code == 400
+    assert response.status_code == 409
     assert response.json() == {"detail": "Username already exists"}
 
 # Тест регистрации с недостаточной длиной пароля

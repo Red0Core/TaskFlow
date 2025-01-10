@@ -1,44 +1,41 @@
-import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/api/api_client.dart';
 import 'package:frontend/api/auth_api.dart';
 import 'package:frontend/api/tasks_api.dart';
 import 'package:frontend/tasks.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:integration_test/integration_test.dart';
 
-void main() {
+void main() async {
   late ApiClient apiClient;
   late AuthApi authApi;
   late TasksApi tasksApi;
-
-  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = SharedPreferencesAsync();
   
   group("Task integration tests", () {
     setUp(() async {
       // Настройка реального клиента
-      apiClient = ApiClient(baseUrl: 'http://127.0.0.1:8000');
+      apiClient = ApiClient(baseUrl: 'http://127.0.0.1:8000/api', prefs);
       authApi = AuthApi(apiClient);
 
-      // Очистка SharedPreferences перед каждым тестом
-      SharedPreferences.setMockInitialValues({});
+      // Логинимся или регистрируемся и логинимся
+      try {
+        await authApi.login('testuser', 'password123');
+      } on AuthenticationException {
+        await authApi.register('testuser', 'password123');
+        await authApi.login('testuser', 'password123');
+      }
 
-      await authApi.login('testuser', 'password123');
-      await apiClient.refreshAccessToken();
       tasksApi = TasksApi(apiClient);
     });
 
     test('Create a task', () async {
-      try {
-        final task = await Task.create('Test Task', 'Test Description', tasksApi);
-        // Проверяем, что задача создана
-          expect(task.id, isNotNull);
-          expect(task.title, equals('Test Task'));
-          expect(task.description, equals('Test Description'));
-          expect(task.isCompleted, isFalse);
-      } on DioException {
-        throw Exception("не авторизован пон");
-      }
+      final task = await Task.create('Test Task', 'Test Description', tasksApi);
+      // Проверяем, что задача создана
+        expect(task.id, isNotNull);
+        expect(task.title, equals('Test Task'));
+        expect(task.description, equals('Test Description'));
+        expect(task.isCompleted, isFalse);
     });
 
     test('Update a task', () async {
