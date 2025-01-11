@@ -99,7 +99,7 @@ jobs:
         run:
           flutter test integration_test/tasks_integration_test.dart -d linux -r github
 
-  build-and-release:
+  build:
     needs: integration-tests
     defaults:
       run:
@@ -158,8 +158,9 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: pwsh # Для Windows
       run: |
-        mkdir release-assets\windows
-        Copy-Item -Path build\windows\x64\runner\Release\* -Destination release-assets\windows -Recurse
+        mkdir release-assets/windows
+        Copy-Item -Path build/windows/x64/runner/Release/* -Destination release-assets\windows -Recurse
+        Compress-Archive -Path build/windows/runner/Release/* -DestinationPath release-assets/windows/frontend-windows.zip
         Get-ChildItem -Recurse -Force -Path release-assets/windows
 
     - name: Prepare release assets for Linux
@@ -168,16 +169,47 @@ jobs:
       run: |
         mkdir -p release-assets/linux
         cp -r build/linux/x64/release/bundle/* release-assets/linux/
-        ls -R release-assets/linux/
-        tar -czvf release-assets/linux/frontend-linux.tar.gz -C build/linux/x64/release/bundle .
-      
-    # Upload release assets to GitHub
-    - name: Upload Release Assets
+        tar -czf release-assets/linux/frontend-linux.tar.gz -C build/linux/x64/release/bundle .
+        ls -R release-assets/linux
+
+    # Upload release artifacts windows 
+    - name: Upload Release Assets fro
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-artifacts
+        path: release-assets/windows/frontend-windows.zip
+    
+    - name: Upload Linux Artifacts
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-artifacts
+        path: release-assets/linux/frontend-linux.tar.gz
+  
+  release-upload:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Download Linux Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: linux-artifacts
+        path: release-files/linux
+
+    - name: Download Windows Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: windows-artifacts
+        path: release-files/windows
+   
+    - name: Create GitHub Release
       uses: softprops/action-gh-release@v2.2.1
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
-          release-assets/linux/frontend-linux.tar.gz
-          release-assets/windows/frontend.exe
+          release-files/linux/frontend-linux.tar.gz
+          release-files/windows/frontend-windows.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
