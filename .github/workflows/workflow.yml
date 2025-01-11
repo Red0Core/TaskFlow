@@ -161,7 +161,7 @@ jobs:
         mkdir ${{ github.workspace }}\release-assets\windows
         Copy-Item -Path build\windows\x64\runner\Release\* -Destination ${{ github.workspace }}\release-assets\windows -Recurse
         Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath ${{ github.workspace }}\release-assets\windows\frontend-windows.zip
-        Get-ChildItem -Recurse -Force -Path release-assets\windows
+        Get-ChildItem -Recurse -Force -Path ${{ github.workspace }}\release-assets\windows
 
     - name: Prepare release assets for Linux
       if: matrix.os == 'ubuntu-latest'
