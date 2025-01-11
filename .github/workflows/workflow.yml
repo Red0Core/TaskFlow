@@ -147,11 +147,11 @@ jobs:
 
     - name: Build App for Windows
       if: matrix.os == 'windows-latest'
-      run: flutter build windows --dart-define=BASE_API_URL=https://taskflow-112i.onrender.com/api/
+      run: flutter build windows --dart-define=BASE_API_URL=https://taskflow-112i.onrender.com/api/ --release
 
     - name: Build App for Linux
       if: matrix.os == 'ubuntu-latest'
-      run: flutter build linux --dart-define=BASE_API_URL=https://taskflow-112i.onrender.com/api/
+      run: flutter build linux --dart-define=BASE_API_URL=https://taskflow-112i.onrender.com/api/ --release
 
     # Prepare release assets
     - name: Prepare release assets for Windows
@@ -160,6 +160,7 @@ jobs:
       run: |
         mkdir release-assets\windows
         Copy-Item -Path build\windows\x64\runner\Release\* -Destination release-assets\windows -Recurse
+        Get-ChildItem -Recurse -Force -Path release-assets/windows
 
     - name: Prepare release assets for Linux
       if: matrix.os == 'ubuntu-latest'
@@ -167,8 +168,8 @@ jobs:
       run: |
         mkdir -p release-assets/linux
         cp -r build/linux/x64/release/bundle/* release-assets/linux/
-    - name: Проверка содержимого папки release-assets/linux
-      run: ls -R release-assets/linux/
+        ls -R release-assets/linux/
+        tar -czvf release-assets/linux/frontend-linux.tar.gz -C build/linux/x64/release/bundle .
       
     # Upload release assets to GitHub
     - name: Upload Release Assets
@@ -176,7 +177,7 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
-          release-assets/linux/frontend
+          release-assets/linux/frontend-linux.tar.gz
           release-assets/windows/frontend.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
