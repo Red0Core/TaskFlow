@@ -159,9 +159,9 @@ jobs:
       shell: pwsh # Для Windows
       run: |
         mkdir release-assets/windows
-        Copy-Item -Path build/windows/x64/runner/Release/* -Destination release-assets\windows -Recurse
-        Compress-Archive -Path build/windows/runner/Release/* -DestinationPath release-assets/windows/frontend-windows.zip
-        Get-ChildItem -Recurse -Force -Path release-assets/windows
+        Copy-Item -Path build\windows\x64\runner\Release\* -Destination release-assets\windows -Recurse
+        Compress-Archive -Path build\windows\runner\Release\* -DestinationPath release-assets/windows/frontend-windows.zip
+        Get-ChildItem -Recurse -Force -Path release-assets\windows
 
     - name: Prepare release assets for Linux
       if: matrix.os == 'ubuntu-latest'
@@ -178,15 +178,15 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: windows-artifacts
-        path: release-assets/windows/frontend-windows.zip
+        path: ${{ github.workspace }}/release-assets/windows/frontend-windows.zip
     
     - name: Upload Linux Artifacts
       if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v4
       with:
         name: linux-artifacts
-        path: release-assets/linux/frontend-linux.tar.gz
-  
+        path: ${{ github.workspace }}/release-assets/linux/frontend-linux.tar.gz
+        
   release-upload:
     runs-on: ubuntu-latest
     needs: build
