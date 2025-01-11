@@ -167,14 +167,16 @@ jobs:
       run: |
         mkdir -p release-assets/linux
         cp -r build/linux/x64/release/bundle/* release-assets/linux/
-
+    - name: Проверка содержимого папки release-assets/linux
+      run: ls -R release-assets/linux/
+      
     # Upload release assets to GitHub
     - name: Upload Release Assets
       uses: softprops/action-gh-release@v2.2.1
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
-          release-assets/linux/**/*
-          release-assets/windows/**/*
+          release-assets/linux/frontend
+          release-assets/windows/frontend.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
