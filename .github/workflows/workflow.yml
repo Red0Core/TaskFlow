@@ -158,19 +158,19 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: pwsh # Для Windows
       run: |
-        mkdir release-assets/windows
-        Copy-Item -Path build\windows\x64\runner\Release\* -Destination release-assets\windows -Recurse
-        Compress-Archive -Path build\windows\runner\Release\* -DestinationPath release-assets/windows/frontend-windows.zip
+        mkdir ${{ github.workspace }}\release-assets\windows
+        Copy-Item -Path build\windows\x64\runner\Release\* -Destination ${{ github.workspace }}\release-assets\windows -Recurse
+        Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath ${{ github.workspace }}\release-assets\windows\frontend-windows.zip
         Get-ChildItem -Recurse -Force -Path release-assets\windows
 
     - name: Prepare release assets for Linux
       if: matrix.os == 'ubuntu-latest'
       shell: bash
       run: |
-        mkdir -p release-assets/linux
-        cp -r build/linux/x64/release/bundle/* release-assets/linux/
-        tar -czf release-assets/linux/frontend-linux.tar.gz -C build/linux/x64/release/bundle .
-        ls -R release-assets/linux
+        mkdir -p ${{ github.workspace }}/release-assets/linux
+        cp -r build/linux/x64/release/bundle/* ${{ github.workspace }}/release-assets/linux/
+        tar -czf ${{ github.workspace }}/release-assets/linux/frontend-linux.tar.gz -C build/linux/x64/release/bundle .
+        ls -R ${{ github.workspace }}/release-assets/linux
 
     # Upload release artifacts windows 
     - name: Upload Release Assets fro
