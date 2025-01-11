@@ -159,7 +159,7 @@ jobs:
       shell: pwsh # Для Windows
       run: |
         mkdir release-assets\windows
-        Copy-Item -Path build\windows\runner\Release\* -Destination release-assets\windows -Recurse
+        Copy-Item -Path build\windows\x64\runner\Release\* -Destination release-assets\windows -Recurse
 
     - name: Prepare release assets for Linux
       if: matrix.os == 'ubuntu-latest'
